@@ -1,10 +1,15 @@
 package com.example.tripsapplication.utils;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.TimePicker;
+
+import java.util.Calendar;
 
 /**
  * Utilities of View
