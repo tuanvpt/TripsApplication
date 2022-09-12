@@ -1,17 +1,10 @@
 package com.example.tripsapplication.ui;
 
 import android.app.DatePickerDialog;
-import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.DatePicker;
 
 import com.example.tripsapplication.R;
 import com.example.tripsapplication.base.BaseMVVMFragment;
+import com.example.tripsapplication.database.DatabaseManger;
 import com.example.tripsapplication.databinding.FragmentHomeBinding;
 import com.example.tripsapplication.utils.ViewUtils;
 
@@ -23,7 +16,8 @@ import java.util.Locale;
 public class HomeFragment extends BaseMVVMFragment<FragmentHomeBinding, HomeViewModel> {
 
     private boolean isAllFieldsChecked = false;
-    final Calendar myCalendar = Calendar.getInstance();
+    private final Calendar myCalendar = Calendar.getInstance();
+    private DatabaseManger dbManager;
 
 
     @Override
@@ -38,8 +32,24 @@ public class HomeFragment extends BaseMVVMFragment<FragmentHomeBinding, HomeView
 
     @Override
     protected void initialize() {
+        /*Hide keyboard when user press out of edittext*/
+        getViewBinding().getRoot().setOnClickListener(view -> ViewUtils.hideKeyboardFrom(getContext(), getViewBinding().getRoot()));
+
+        dbManager = new DatabaseManger(requireContext());
+        dbManager.open();
+
         handleDataOfTrips();
         handleSubmitButton();
+        handleCheckBox();
+    }
+
+    /*Handle only one can select*/
+    private void handleCheckBox() {
+        getViewBinding().cbYes.setOnCheckedChangeListener((buttonView, isChecked)
+                -> getViewBinding().cbNo.setChecked(false));
+
+        getViewBinding().cbNo.setOnCheckedChangeListener((buttonView, isChecked)
+                -> getViewBinding().cbYes.setChecked(false));
     }
 
     private void handleDataOfTrips() {
@@ -66,9 +76,24 @@ public class HomeFragment extends BaseMVVMFragment<FragmentHomeBinding, HomeView
         getViewBinding().btnDatabase.setOnClickListener(view -> {
             isAllFieldsChecked = CheckAllFields();
             if (isAllFieldsChecked) {
-                showToast("True");
+                // Save data in SQLite
+                SaveDataInSQLite();
+
+                showToast("Saved");
             }
         });
+
+    }
+
+    private void SaveDataInSQLite() {
+
+        final String name = getViewBinding().edtName.getText().toString();
+        final String destination = getViewBinding().edtDestination.getText().toString();
+        final String dataOfTrips = getViewBinding().edtDataOfTrip.getText().toString();
+        final Boolean isCheck = getViewBinding().cbYes.isChecked();
+        final String description = getViewBinding().edtDescription.getText().toString();
+
+        dbManager.insert(name, destination, dataOfTrips, String.valueOf(isCheck), description);
 
     }
 
@@ -88,6 +113,11 @@ public class HomeFragment extends BaseMVVMFragment<FragmentHomeBinding, HomeView
             return false;
         }
 
+/*        if (getViewBinding().cbYes.isChecked() || getViewBinding().cbNo.isChecked()) {
+            ViewUtils.show(getViewBinding().tvErrorCheckRisk);
+            getViewBinding().tvErrorCheckRisk.setText(R.string.label_validation_risk);
+            return false;
+        }*/
 
         // after all validation return true.
         return true;
