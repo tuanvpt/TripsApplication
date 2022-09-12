@@ -104,7 +104,7 @@
     <EditText
         android:id="@+id/edtDescription"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_150sdp"
+        android:layout_height="wrap_content"
         android:cursorVisible="true"
         android:maxLength="255" />
 
